@@ -1,0 +1,28 @@
+# MacOS
+.DS_Store
+
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# SketchUp
+*.skp
+*.skb
+*.style
+*.layout
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Artifacts
+toolbars.json
