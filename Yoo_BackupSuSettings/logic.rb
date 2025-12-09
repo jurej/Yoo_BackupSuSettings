@@ -37,32 +37,50 @@ module Yoo
 
       def self.export_settings(export_path)
         prefs_path = get_preferences_file
+        puts "Yoo_BackupSuSettings: Reading preferences from #{prefs_path}"
+        
         unless File.exist?(prefs_path)
+          UI.messagebox("Could not find PrivatePreferences.json at: #{prefs_path}")
           raise "PrivatePreferences.json not found at #{prefs_path}"
         end
 
         data = read_json(prefs_path)
+        puts "Yoo_BackupSuSettings: Read #{data.keys.size} keys from PrivatePreferences.json"
         
         export_data = {}
         
         # 1. Capture MainWindow ToolBarState and DockWidgetState
         if data['MainWindow']
+          puts "Yoo_BackupSuSettings: Found MainWindow key"
           export_data['MainWindow'] = {}
-          export_data['MainWindow']['ToolBarState'] = data['MainWindow']['ToolBarState'] if data['MainWindow']['ToolBarState']
-          export_data['MainWindow']['DockWidgetState'] = data['MainWindow']['DockWidgetState'] if data['MainWindow']['DockWidgetState']
+          if data['MainWindow']['ToolBarState']
+            export_data['MainWindow']['ToolBarState'] = data['MainWindow']['ToolBarState']
+            puts "Yoo_BackupSuSettings: Found ToolBarState"
+          else
+            puts "Yoo_BackupSuSettings: ToolBarState MISSING in MainWindow"
+          end
+          
+          if data['MainWindow']['DockWidgetState']
+            export_data['MainWindow']['DockWidgetState'] = data['MainWindow']['DockWidgetState']
+            puts "Yoo_BackupSuSettings: Found DockWidgetState"
+          else
+            puts "Yoo_BackupSuSettings: DockWidgetState MISSING in MainWindow"
+          end
+        else
+          puts "Yoo_BackupSuSettings: MainWindow key MISSING"
         end
         
         # 2. Capture QtRubyWorkspace toolbars
-        # These look like "QtRubyWorkspace\\RubyToolBar-12345"
-        # We also might want "Extensions" section to save enabled state? User asked for "positions", but enabled state is related.
-        # The user request specifically mentioned "positions of their toolbars".
-        # QtRubyWorkspace entries contain position (X, Y, Floating, Width, Height) and Visible.
-        
+        count_ruby = 0
         data.each do |key, value|
           if key.start_with?("QtRubyWorkspace")
             export_data[key] = value
+            count_ruby += 1
           end
         end
+        puts "Yoo_BackupSuSettings: Found #{count_ruby} QtRubyWorkspace items"
+
+        puts "Yoo_BackupSuSettings: Exporting #{export_data.keys.size} root keys to #{export_path}"
 
         # Save to file
         File.open(export_path, 'w') do |f|
