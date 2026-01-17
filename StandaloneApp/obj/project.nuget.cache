@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "ordAE22yxRQ=",
+  "success": true,
+  "projectFilePath": "C:\\SU-Plugins\\Plugins\\github\\Yoo_BackupSuSettings\\StandaloneApp\\YooBackupRestorer.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\judez\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.1\\microsoft.net.illink.tasks.10.0.1.nupkg.sha512",
+    "C:\\Users\\judez\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\10.0.1\\microsoft.netcore.app.runtime.win-x64.10.0.1.nupkg.sha512",
+    "C:\\Users\\judez\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\10.0.1\\microsoft.windowsdesktop.app.runtime.win-x64.10.0.1.nupkg.sha512",
+    "C:\\Users\\judez\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\10.0.1\\microsoft.aspnetcore.app.runtime.win-x64.10.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
