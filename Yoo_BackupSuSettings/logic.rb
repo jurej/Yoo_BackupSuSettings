@@ -46,40 +46,18 @@ module Yoo
 
         data = read_json(prefs_path)
         puts "Yoo_BackupSuSettings: Read #{data.keys.size} keys from PrivatePreferences.json"
-        
-        export_data = {}
-        
-        # 1. Capture MainWindow ToolBarState and DockWidgetState
-        if data['MainWindow']
-          puts "Yoo_BackupSuSettings: Found MainWindow key"
-          export_data['MainWindow'] = {}
-          if data['MainWindow']['ToolBarState']
-            export_data['MainWindow']['ToolBarState'] = data['MainWindow']['ToolBarState']
-            puts "Yoo_BackupSuSettings: Found ToolBarState"
-          else
-            puts "Yoo_BackupSuSettings: ToolBarState MISSING in MainWindow"
-          end
-          
-          if data['MainWindow']['DockWidgetState']
-            export_data['MainWindow']['DockWidgetState'] = data['MainWindow']['DockWidgetState']
-            puts "Yoo_BackupSuSettings: Found DockWidgetState"
-          else
-            puts "Yoo_BackupSuSettings: DockWidgetState MISSING in MainWindow"
-          end
-        else
-          puts "Yoo_BackupSuSettings: MainWindow key MISSING"
-        end
-        
-        # 2. Capture QtRubyWorkspace toolbars
-        count_ruby = 0
-        data.each do |key, value|
-          if key.start_with?("QtRubyWorkspace")
-            export_data[key] = value
-            count_ruby += 1
-          end
-        end
-        puts "Yoo_BackupSuSettings: Found #{count_ruby} QtRubyWorkspace items"
 
+        # Handle "This Computer Only" wrapping
+        if data.key?("This Computer Only")
+          puts "Yoo_BackupSuSettings: Found 'This Computer Only' wrapper."
+          data = data["This Computer Only"]
+        end
+        
+        # Determine what to export: EVERYTHING
+        # We just dump the entire 'data' hash to the export file.
+        # This ensures we capture extension settings, toolbars, workspace, etc.
+        export_data = data
+        
         puts "Yoo_BackupSuSettings: Exporting #{export_data.keys.size} root keys to #{export_path}"
 
         # Save to file
@@ -88,34 +66,64 @@ module Yoo
         end
       end
 
-      def self.import_settings(import_path)
+      # options: { :workspace => bool, :toolbars => bool, :extensions => bool }
+      def self.import_settings(import_path, options = {})
         unless File.exist?(import_path)
           raise "Import file not found: #{import_path}"
         end
 
         import_data = read_json(import_path)
         
-        # Apply Main Window settings
-        if import_data['MainWindow']
-          if val = import_data['MainWindow']['ToolBarState']
-            Sketchup.write_default('MainWindow', 'ToolBarState', val)
-          end
-          if val = import_data['MainWindow']['DockWidgetState']
-            Sketchup.write_default('MainWindow', 'DockWidgetState', val)
+        # Set defaults if options are missing (historical behavior: load everything relevant to toolbars/workspace)
+        # But if options are passed, we respect them.
+        # If options is empty/nil, default to ALL TRUE for backward compatibility? 
+        # Actually, let's strictly follow options if provided.
+        
+        load_workspace = options.fetch(:workspace, true)
+        load_toolbars  = options.fetch(:toolbars, true)
+        load_extensions = options.fetch(:extensions, true)
+
+        puts "Yoo_BackupSuSettings: Importing... Workspace: #{load_workspace}, Toolbars: #{load_toolbars}, Extensions: #{load_extensions}"
+        
+        # 1. Workspace (DockWidgetState)
+        if load_workspace && import_data['MainWindow'] && import_data['MainWindow']['DockWidgetState']
+           Sketchup.write_default('MainWindow', 'DockWidgetState', import_data['MainWindow']['DockWidgetState'])
+        end
+
+        # 2. Toolbars (ToolBarState & QtRubyWorkspace)
+        if import_data['MainWindow'] && import_data['MainWindow']['ToolBarState']
+          if load_toolbars
+            Sketchup.write_default('MainWindow', 'ToolBarState', import_data['MainWindow']['ToolBarState'])
           end
         end
+
+        # Iterate all keys to find:
+        # - QtRubyWorkspace (Toolbars)
+        # - Everything else (Extensions, usually)
         
-        # Apply Ruby Toolbars
         import_data.each do |section, keys|
-          next if section == 'MainWindow'
+          next if section == 'MainWindow' # Handle separately above
+
+          is_toolbar_section = section.start_with?("QtRubyWorkspace")
           
-          # Assuming other top level keys are sections
+          if is_toolbar_section
+            next unless load_toolbars
+          else
+            # It is an extension setting or other setting
+            next unless load_extensions
+          end
+          
+          # Write the section
           if keys.is_a?(Hash)
             keys.each do |key, value|
-              # Sketchup.write_default handles basic types (bool, int, string, float)
-              # In PrivatePreferences logic, everything seems to match.
               Sketchup.write_default(section, key, value)
             end
+          else
+            # Sometimes values are not hashes? In PrivatePreferences they usually are sections.
+            # But Sketchup.write_default(section, key, value) requires a key.
+            # If 'keys' is not a hash, we might be looking at a weird structure or root level key?
+            # Standard PrivatePreferences structure is "Section" -> "Key" -> Value
+            # So 'keys' here is the hash of key-values.
           end
         end
         

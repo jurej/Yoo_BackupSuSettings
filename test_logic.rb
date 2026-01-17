@@ -10,14 +10,10 @@ def test_export(prefs_path)
   data = read_json(prefs_path)
   puts "Read #{data.keys.size} keys: #{data.keys.inspect}"
   
-  root = data
   if data.key?("This Computer Only")
-    puts "Found 'This Computer Only' key, digging deeper..."
-    root = data["This Computer Only"]
-    puts "New root has #{root.keys.size} keys"
+    puts "Found 'This Computer Only' wrapper."
+    data = data["This Computer Only"]
   end
-
-  data = root
 
   export_data = {}
 
@@ -55,4 +51,4 @@ def test_export(prefs_path)
   puts JSON.pretty_generate(export_data)
 end
 
-test_export('PrivatePreferences_Example.json')
+test_export('test_prefs.json')

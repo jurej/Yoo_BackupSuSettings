@@ -28,3 +28,6 @@
 toolbars.json
 PrivatePreferences_Example.json
 
+# Windows
+desktop.ini
+**/desktop.ini
