@@ -28,6 +28,9 @@
 toolbars.json
 PrivatePreferences_Example.json
 
+# Build outputs
+StandaloneApp/
+
 # Windows
 desktop.ini
 **/desktop.ini
