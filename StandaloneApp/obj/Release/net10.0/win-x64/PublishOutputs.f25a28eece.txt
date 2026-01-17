@@ -1,2 +1,0 @@
-C:\SU-Plugins\Plugins\github\Yoo_BackupSuSettings\StandaloneApp\dist\YooBackupRestorer.pdb
-C:\SU-Plugins\Plugins\github\Yoo_BackupSuSettings\StandaloneApp\dist\YooBackupRestorer.exe
